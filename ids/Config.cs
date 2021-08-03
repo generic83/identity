@@ -106,7 +106,7 @@ namespace ids
           AllowedGrantTypes = GrantTypes.ClientCredentials,
           ClientSecrets = {new Secret("SuperSecretPassword".Sha256())},
 
-          AllowedScopes = {"weatherapi.read", "weatherapi.write"}
+          AllowedScopes = {"weatherapi.read", "weatherapi.write"},
         },
 
         // interactive client using code flow + pkce
@@ -114,24 +114,60 @@ namespace ids
         {
           ClientId = "interactive",  // Web client
           ClientSecrets = {new Secret("SuperSecretPassword".Sha256())},
-
           AllowedGrantTypes = GrantTypes.Code,
 
+          //https://stackoverflow.com/questions/45458612/identityserver-4-openidconnect-redirect-to-external-sign-in-url
           RedirectUris = {"https://localhost:5444/signin-oidc"},
+
           FrontChannelLogoutUri = "https://localhost:5444/signout-oidc",
           PostLogoutRedirectUris = {"https://localhost:5444/signout-callback-oidc"},
 
+          //Specifies whether this client can request refresh tokens - offline_access scope should also be added on the client side
           AllowOfflineAccess = true,
 
+          //If you uncomment this, then the same refresh token will be used and no new refresh token is sent on every refresh token
+          //If you set this to OneTimeOnly, it means you will get a new refresh token every time you send a refresh token request, so it is basically enabling refresh token rotation   
+          //RefreshTokenUsage = TokenUsage.ReUse,
+
           //You need to add role scope if you want the roles to be retrieved
-          AllowedScopes = {"openid", "profile",
-                "weatherapi.read", 
-                "role"},
+          AllowedScopes = {"openid", "profile", "weatherapi.read", "role"},
           RequirePkce = true,
           RequireConsent = true,
-          AllowPlainTextPkce = false
+          AllowPlainTextPkce = false,
+         
+          //Even if you set this to 20 seconds, the minimum lifetime is 5 min due to clock skew
+          //AccessTokenLifetime = 20,
+
+           /*
+           When a Client receives an ID token, it will generally do something like convert it to a ClaimsIdentity, and persist this, eg using a cookie.
+           The ID token has to be un-expired at this point of use (which it should be, since it has just been issued). 
+           But after this it is not used again, so it does not matter if it expires while the user still has an active session.
+           https://stackoverflow.com/questions/25686484/what-is-intent-of-id-token-expiry-time-in-openid-connect
+           https://vxcompany.com/insight/cookies-tokens-and-session-lifetime-with-identity-server/
+           */
+           //IdentityTokenLifetime = 20
         },
 
+        new Client
+            {
+                ClientId = "js",
+                ClientName = "JavaScript Client",
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowAccessTokensViaBrowser = true,
+
+                RedirectUris =           { "http://localhost:3000/callback.html" },
+                PostLogoutRedirectUris = { "http://localhost:3000/index.html" },
+                AllowedCorsOrigins =     { "http://localhost:3000" },
+
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                "weatherapi.read",
+                },
+               // Even if you set this to 20 seconds, the minimum lifetime is 5 min due to clock skew
+               // AccessTokenLifetime = 20,
+            }
           };
     }
 }

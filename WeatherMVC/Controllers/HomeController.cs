@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -43,14 +44,54 @@ namespace WeatherMVC.Controllers
         public async Task<IActionResult> Weather()
         {
             var data = new List<WeatherData>();
-            //id_token
-            var idtoken = await HttpContext.GetTokenAsync("id_token");
             //access_token
-            var token = await HttpContext.GetTokenAsync("access_token");
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            //id_token
+            //var idtoken = await HttpContext.GetTokenAsync("id_token");
+
+            //refresh token
+            //AccessToken and new refresh token should be stored for next use
+            //The code below works fine if RefreshTokenUsage set to TokenUsage.ReUse in IdentityServer client configuration
+            //as the same refresh token can be used
+            //var handler = new JwtSecurityTokenHandler();
+            //var jwt = handler.ReadJwtToken(accessToken);
+            //var nowUtc = DateTime.UtcNow;
+            //if (jwt.ValidTo.CompareTo(nowUtc) <= 0)
+            //{
+            //    //How to use refresh token https://stackoverflow.com/questions/44175115/how-to-use-refresh-token-in-identityserver-4
+            //    var refreshToken = await HttpContext.GetTokenAsync("refresh_token");
+            //    var response = await _tokenService.GetRefreshToken(refreshToken);
+            //    accessToken = response.AccessToken;
+            //}
+
+
+            using (var client = new HttpClient())
+            {
+                client.SetBearerToken(accessToken);
+
+                var result = client.GetAsync("https://localhost:5445/weatherforecast").Result;
+
+                if (result.IsSuccessStatusCode)
+                {
+                    var model = result.Content.ReadAsStringAsync().Result;
+
+                    data = JsonConvert.DeserializeObject<List<WeatherData>>(model);
+
+                    return View(data);
+                }
+                else
+                {
+                    throw new Exception("Unable to get content");
+                }
+            }
+
+            // m2m client - client credentials flow
             //using (var client = new HttpClient())
             //{
+            //    var tokenResponse = await _tokenService.GetToken("weatherapi.read");
+
             //    client
-            //      .SetBearerToken(token);
+            //      .SetBearerToken(tokenResponse.AccessToken);
 
             //    var result = client
             //      .GetAsync("https://localhost:5445/weatherforecast")
@@ -68,34 +109,7 @@ namespace WeatherMVC.Controllers
             //    {
             //        throw new Exception("Unable to get content");
             //    }
-
             //}
-
-            // m2m client - client credentials flow
-            using (var client = new HttpClient())
-            {
-                var tokenResponse = await _tokenService.GetToken("weatherapi.read");
-
-                client
-                  .SetBearerToken(tokenResponse.AccessToken);
-
-                var result = client
-                  .GetAsync("https://localhost:5445/weatherforecast")
-                  .Result;
-
-                if (result.IsSuccessStatusCode)
-                {
-                    var model = result.Content.ReadAsStringAsync().Result;
-
-                    data = JsonConvert.DeserializeObject<List<WeatherData>>(model);
-
-                    return View(data);
-                }
-                else
-                {
-                    throw new Exception("Unable to get content");
-                }
-            }
             return View(data);
         }
 
