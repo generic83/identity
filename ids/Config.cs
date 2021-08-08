@@ -125,6 +125,7 @@ namespace ids
           //Specifies whether this client can request refresh tokens - offline_access scope should also be added on the client side
           AllowOfflineAccess = true,
 
+          
           //If you uncomment this, then the same refresh token will be used and no new refresh token is sent on every refresh token
           //If you set this to OneTimeOnly, it means you will get a new refresh token every time you send a refresh token request, so it is basically enabling refresh token rotation   
           //RefreshTokenUsage = TokenUsage.ReUse,
@@ -153,9 +154,12 @@ namespace ids
                 ClientId = "js",
                 ClientName = "JavaScript Client",
                 AllowedGrantTypes = GrantTypes.Implicit,
+
+                //AllowAccessTokensViaBrowser controls if we allow an access token to be returned to the client in the URL from the authorize endpoint (as opposed to the normal mechanism of the token endpoint).
+                //This is needed in Implicit flow
                 AllowAccessTokensViaBrowser = true,
 
-                RedirectUris =           { "http://localhost:3000/callback.html" },
+                RedirectUris =           { "http://localhost:3000/callback.html","http://localhost:3000/silent-redirect.html"  },
                 PostLogoutRedirectUris = { "http://localhost:3000/index.html" },
                 AllowedCorsOrigins =     { "http://localhost:3000" },
 
@@ -163,11 +167,35 @@ namespace ids
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
-                "weatherapi.read",
+                "weatherapi.read","role"
                 },
                // Even if you set this to 20 seconds, the minimum lifetime is 5 min due to clock skew
                // AccessTokenLifetime = 20,
-            }
+            },
+
+                 new Client
+                {
+                  ClientId = "js_code",  // Web client
+                  RequireClientSecret = false,
+                  AllowedGrantTypes = GrantTypes.Code,
+
+
+                RedirectUris =           { "http://localhost:3000/callback.html","http://localhost:3000/silent-redirect.html"  },
+                  PostLogoutRedirectUris = { "http://localhost:3000/index.html" },
+                  AllowedCorsOrigins =     { "http://localhost:3000" },
+                  
+                  AllowOfflineAccess = true,
+                  
+                  AllowedScopes =
+                  {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "weatherapi.read","role"
+                  },
+                  RequirePkce = true,
+                  AllowPlainTextPkce = false,
+                  AccessTokenLifetime = 3600
+                },
           };
     }
 }

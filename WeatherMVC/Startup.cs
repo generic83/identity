@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.IdentityModel.Tokens;
 using WeatherMVC.Services;
 using IdentityModel;
-using System;
-using System.Threading.Tasks;
 
 namespace WeatherMVC
 {
@@ -37,7 +35,7 @@ namespace WeatherMVC
                 // If you set this to false, then the cookie containing the authentication ticket will expire based on the expired time set in the OnTickectReceived event
                 //options.SlidingExpiration = false;
 
-                // Expire the session of 15 minutes of inactivity
+                // Expire the session of 15 minutes of inactivity -- test? when cookie, incl authenticate tickets expires, the Asp.Net Core Web will request a new token and so new cookie
                 // options.ExpireTimeSpan = TimeSpan.FromSeconds(10);
 
                 
@@ -63,9 +61,9 @@ namespace WeatherMVC
                 {
                     //This set the authentication ticket expiry, which is the result of successful authentication against identity server, which then result in access token. The access token expiry time has nothing to do with this
                     //The authentication ticket is stored in the ASP.Net Core Web cookie
-                    //When it expires, the ASP.Net Core Web app will request a new ticket, and so it tries to ask the IdentityServer for new tokens(token_id, access token, and refresh token).
+                    //When the authentication ticket expires, the ASP.Net Core Web app will request a new ticket, and so it tries to ask the IdentityServer for new tokens(token_id, access token, and refresh token).
                     //Now if IdentityServer cookies, idsrv, are sill valid, the authentication will happen automatically, meaning the user does not have to enter username and password, and so a new token will be sent by IdentityServer
-                    //But if IdentityServer cookies have already expired, then the user will be prompted to enter username and password to get authenticated, and so get new tokens
+                    //If IdentityServer cookies exist, then requesting new token will happen automatically, but if the cookies have already expired, then the user will be prompted to enter username and password to get authenticated, and so get new tokens
                     //Look at commented code in IdentityServer startup where cookie settings can be configured(sliding expiration and expiration time)
                     //Setting the options.SlidingExpiration to true under the AddCookie options above will slide the expiry time for the authentication ticket;
                     //context.Properties.ExpiresUtc = DateTime.UtcNow.AddMinutes(5);
