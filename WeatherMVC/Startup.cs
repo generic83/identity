@@ -95,6 +95,7 @@ namespace WeatherMVC
 
                 //You need this to get role scope
                 options.Scope.Add("role");
+
                 options.SaveTokens = true;
 
                 // you need this to add JWT roles as claims to ClaimsIdentity

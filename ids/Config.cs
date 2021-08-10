@@ -194,7 +194,7 @@ namespace ids
                   },
                   RequirePkce = true,
                   AllowPlainTextPkce = false,
-                  AccessTokenLifetime = 3600
+                  AccessTokenLifetime = 20,
                 },
           };
     }

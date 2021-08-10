@@ -43,6 +43,7 @@ namespace WeatherApi
                 {
                     options.ApiName = "weatherapi";
                     options.Authority = "https://localhost:5443";
+                    //options.ApiSecret  //You can specify ApiSecret which is set on the ApiResources in IdentityServer Config
                 });
 
             services.AddControllers();

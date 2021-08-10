@@ -40,8 +40,9 @@ namespace WeatherMVC.Controllers
             return View();
         }
 
-        [Authorize(Roles ="admin")]
-        public async Task<IActionResult> Weather()
+        //  [Authorize(Roles ="admin")]
+        [Authorize]
+          public async Task<IActionResult> Weather()
         {
             var data = new List<WeatherData>();
             //access_token
